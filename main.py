@@ -31,7 +31,10 @@ database.Base.metadata.create_all(bind=database.engine)
 
 @app.get("/")
 async def read_index():
-    return FileResponse('static/index.html')
+    print("DEBUG: Root route hit!")
+    if os.path.exists('static/index.html'):
+        return FileResponse('static/index.html')
+    return {"status": "error", "message": "static/index.html not found", "cwd": os.getcwd(), "files": os.listdir('.')}
 
 @app.get("/pay")
 async def read_pay():
