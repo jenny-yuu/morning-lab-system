@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 import database, models, crud, utils
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # 載入環境變數
 load_dotenv()
@@ -27,6 +28,14 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 初始化資料庫
 database.Base.metadata.create_all(bind=database.engine)
+
+@app.get("/")
+async def read_index():
+    return FileResponse('static/index.html')
+
+@app.get("/pay")
+async def read_pay():
+    return FileResponse('static/payment.html')
 
 # 依賴項：獲取資料庫 Session
 def get_db():
@@ -221,7 +230,7 @@ def handle_message(event):
             reply_text = f"預約成功！這是 {target_date} 的第 {current_count + 1} 份訂單。剩餘名額：{DAILY_CAPACITY - (current_count + 1)}"
     
     elif text == "我要點餐" or text == "菜單":
-        reply_text = "🍳 點我開啟「晨光專送」點餐系統：\nhttps://walked-advised-peers-determine.trycloudflare.com/static/index.html"
+        reply_text = "Morning Lab 點餐系統已上線：\nhttps://morning-lab-system.onrender.com/"
     else:
         reply_text = f"你說了：{text}\n輸入「查詢餘額」可以看錢包，輸入「增加 100」可以測試存錢。"
 
