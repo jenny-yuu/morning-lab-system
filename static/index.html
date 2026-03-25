@@ -359,26 +359,33 @@
         <h2 class="section-title">👤 會員中心</h2>
         <div class="card">
             <div id="mem-status" style="text-align: center; padding: 20px 0;">
-                <p style="color: #999;">您目前是以訪客身分瀏覽</p>
-                <button class="go-btn" style="margin-top: 15px; width: 100%;" onclick="showReg()">立即登記會員</button>
+                <!-- This will be populated by fetchUserStatus() -->
+                <p style="color: #999;">載入中...</p>
             </div>
 
             <div id="reg-form" style="display: none;">
                 <h3 style="margin-bottom: 20px;">會員登記 <span>(享滿千送百)</span></h3>
-                <label>Line 名稱為：</label>
-                <input type="text" id="reg-name" placeholder="請填寫 Line 顯示名稱">
-                <label>常用外送地址 (限高鐵區 5km)：</label>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="text" id="reg-addr" placeholder="例如：竹北市文興路二段..." style="margin-bottom: 0;">
-                    <button class="go-btn" style="white-space: nowrap; padding: 10px; font-size: 13px;" onclick="checkAddrDist('reg')">🔍 檢查</button>
+                <div class="form-group">
+                    <label>真實姓名</label>
+                    <input type="text" id="reg-name" placeholder="請填寫收件人姓名">
                 </div>
-                <div id="reg-dist-info" style="font-size: 11px; color: #999; text-align: right;">請先驗證配送範圍</div>
-                
-                <label>大樓名稱 / 戶號：</label>
-                <input type="text" id="reg-addr-detail" placeholder="例如：高鐵首富 / B棟 5F">
-                <label>聯絡電話：</label>
-                <input type="tel" id="reg-phone">
-                <button class="go-btn" style="width: 100%;" onclick="doReg()">送出登記</button>
+                <div class="form-group">
+                    <label>聯絡電話</label>
+                    <input type="tel" id="reg-phone" placeholder="例如：0912345678">
+                </div>
+                <div class="form-group">
+                    <label>配送地址 (主要)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="reg-addr" placeholder="例如：竹北市文興路二段..." style="margin-bottom: 0;">
+                        <button class="go-btn" style="white-space: nowrap; padding: 10px; font-size: 13px; width: auto;" onclick="checkAddrDist('reg')">🔍 檢查</button>
+                    </div>
+                    <small id="reg-dist-info" style="display:block; margin-top:5px;"></small>
+                </div>
+                <div class="form-group">
+                    <label>詳細地址 (大樓/門牌)</label>
+                    <input type="text" id="reg-addr-detail" placeholder="例如：高鐵首富 / B棟 5F">
+                </div>
+                <button class="go-btn" style="width: 100%; margin-top: 15px;" onclick="doReg()">送出登記</button>
             </div>
         </div>
     </div>
@@ -463,31 +470,57 @@
                 const r = await fetch(`/api/user/${userId}`);
                 const data = await r.json();
                 const memStatus = document.getElementById('mem-status');
-                if (data.is_member) {
+                if (data.status === "success" && data.is_member) {
                     userBalance = data.balance;
                     memStatus.innerHTML = `
-                        <div style="background: var(--primary-soft); padding: 30px; border-radius: 20px; border: 2px solid var(--primary);">
-                            <div style="font-size: 14px; color: #8B7300; font-weight: 800;">當前餘額</div>
-                            <div style="font-size: 40px; font-weight: 800; margin: 10px 0;">$${userBalance}</div>
-                            <div style="font-size: 12px; color: #666;">會員姓名：${data.name}</div>
+                        <div style="background: linear-gradient(135deg, #FFD200 0%, #FFA000 100%); padding: 30px; border-radius: 20px; color: #333; box-shadow: 0 10px 20px rgba(255, 160, 0, 0.2); position: relative; overflow: hidden; margin-bottom: 20px;">
+                            <div style="position: absolute; right: -20px; top: -20px; font-size: 100px; opacity: 0.1; transform: rotate(15deg);">💎</div>
+                            <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; margin-bottom: 5px;">MORNING LAB MEMBER</div>
+                            <div style="font-size: 32px; font-weight: 800; margin-bottom: 15px;">${data.name}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                <div>
+                                    <div style="font-size: 11px; opacity: 0.7;">Account ID</div>
+                                    <div style="font-size: 13px; font-family: monospace;">${userId.substring(0, 12)}...</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 11px; opacity: 0.7;">Available Balance</div>
+                                    <div style="font-size: 28px; font-weight: 800;">$${userBalance}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                             <button class="go-btn" style="background: #333; color: white; width: 100%; font-size: 13px;" onclick="showReg()">更新資料</button>
+                             <button class="go-btn" style="background: white; border: 2px solid #EEE; color: #FF3B30; width: 100%; font-size: 13px;" onclick="liff.logout(); location.reload();">登出</button>
                         </div>
                     `;
-                    // 自動帶入資料
+                    // 自動帶入資料到點餐頁面
                     document.getElementById('o-phone').value = data.phone || '';
                     document.getElementById('o-addr').value = data.address_main || '';
                     document.getElementById('o-addr-detail').value = data.address_detail || '';
                     
-                    // 只要有主地址，就自動檢查一次距離
+                    // 預填註冊表單以便更新
+                    document.getElementById('reg-name').value = data.name || '';
+                    document.getElementById('reg-phone').value = data.phone || '';
+                    document.getElementById('reg-addr').value = data.address_main || '';
+                    document.getElementById('reg-addr-detail').value = data.address_detail || '';
+
                     if (data.address_main) checkAddrDist('o');
-                    
                     setRole('member');
                 } else {
                     memStatus.innerHTML = `
-                        <p style="color: #999;">您目前是以訪客身分瀏覽</p>
-                        <button class="go-btn" style="margin-top: 15px; width: 100%;" onclick="showReg()">立即登記會員</button>
+                         <div style="text-align: center; padding: 40px 20px; background: white; border: 2px dashed #DDD; border-radius: 20px;">
+                            <div style="font-size: 40px; margin-bottom: 15px;">👋</div>
+                            <h3 style="margin-bottom: 10px;">尚未登記會員</h3>
+                            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">註冊儲值會員可享「滿千送百」優惠，並自動記錄配送資訊。</p>
+                            <button class="go-btn" style="width: 100%;" onclick="showReg()">立即登記會員</button>
+                        </div>
                     `;
+                    setRole('guest');
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("Fetch Status Error:", e);
+                setRole('guest');
+            }
         }
 
         async function testTopup(amount) {
@@ -568,9 +601,14 @@
         async function checkAddrDist(type = 'o') {
             const addr = document.getElementById(type === 'o' ? 'o-addr' : 'reg-addr').value;
             const info = document.getElementById(type === 'o' ? 'o-dist-info' : 'reg-dist-info');
-            if (!addr) return alert("請先輸入地址！");
+            if (!addr) {
+                info.innerText = "請輸入地址！";
+                info.style.color = "#999";
+                return false;
+            }
 
             info.innerText = "🔍 正在查詢距離...";
+            info.style.color = "#999";
             try {
                 const r = await fetch(`/api/geocode?address=${encodeURIComponent(addr)}`);
                 const data = await r.json();
@@ -593,11 +631,13 @@
                     }
                 } else {
                     info.innerText = "❌ 找不到此地址";
+                    info.style.color = "#F44336";
                     alert(data.message);
                     return false;
                 }
             } catch (e) {
                 info.innerText = "伺服器或網路錯誤";
+                info.style.color = "#F44336";
                 return false;
             }
         }
@@ -608,10 +648,14 @@
         }
 
         async function doReg() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
             const addrMain = document.getElementById('reg-addr').value;
-            const addrDetail = document.getElementById('reg-addr-detail').value; // Assuming a new input for detail
-            if (!addrMain) return alert("請填寫地址！");
+            const addrDetail = document.getElementById('reg-addr-detail').value;
             
+            if (!name || !phone || !addrMain) return alert("請填寫姓名、電話與主要地址！");
+            
+            // 檢查距離
             const isOk = await checkAddrDist('reg');
             if (!isOk) return;
 

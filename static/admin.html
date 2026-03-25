@@ -166,6 +166,8 @@
                         <td><span class="badge ${statusClass}">${statusText}</span></td>
                         <td>
                             <button onclick="editBalance('${u.user_id}', ${u.balance})" style="cursor:pointer; padding:2px 8px; font-size:12px">調額</button>
+                            <button onclick="editUser('${u.user_id}', '${u.name||''}', '${u.phone||''}', ${u.is_member})" style="cursor:pointer; padding:2px 8px; font-size:12px; margin-left:5px">編輯</button>
+                            <button onclick="deleteUser('${u.user_id}')" style="color:red; cursor:pointer; border:none; background:none; font-size:12px; margin-left:5px">刪除</button>
                         </td>
                     </tr>`;
                     userBody.insertAdjacentHTML('beforeend', row);
@@ -201,6 +203,33 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({user_id: userId, balance: parseInt(newBalance)})
                 });
+                fetchData();
+            }
+        }
+
+        async function editUser(userId, name, phone, isMember) {
+            const newName = prompt('修改姓名：', name);
+            const newPhone = prompt('修改電話：', phone);
+            const newStatus = confirm('是否設為正式會員？');
+            
+            if (newName !== null && newPhone !== null) {
+                await fetch(`/api/admin/user/update`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: userId, 
+                        name: newName, 
+                        phone: newPhone, 
+                        is_member: newStatus
+                    })
+                });
+                fetchData();
+            }
+        }
+
+        async function deleteUser(userId) {
+            if(confirm('確定要刪除此用戶嗎？(這將刪除其所有資料)')) {
+                await fetch(`/api/admin/user/${userId}`, { method: 'DELETE' });
                 fetchData();
             }
         }

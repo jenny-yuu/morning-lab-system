@@ -107,6 +107,36 @@ async def admin_update_balance(request: Request):
     db.commit()
     return {"status": "success"}
 
+@app.post("/api/admin/user/update")
+async def admin_update_user(request: Request):
+    data = await request.json()
+    user_id = data.get("user_id")
+    name = data.get("name")
+    phone = data.get("phone")
+    is_member = data.get("is_member")
+    
+    db = next(get_db())
+    user = db.query(models.User).filter(models.User.line_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.name = name
+    user.phone = phone
+    user.is_member = 1 if is_member else 0
+    db.commit()
+    return {"status": "success"}
+
+@app.delete("/api/admin/user/{user_id}")
+async def admin_delete_user(user_id: str):
+    db = next(get_db())
+    user = db.query(models.User).filter(models.User.line_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db.delete(user)
+    db.commit()
+    return {"status": "success"}
+
 # 依賴項：獲取資料庫 Session
 def get_db():
     db = database.SessionLocal()
@@ -179,7 +209,8 @@ async def get_user_status(user_id: str):
         "is_member": bool(user.is_member),
         "name": user.name,
         "balance": user.balance,
-        "address": user.address,
+        "address_main": user.address_main,
+        "address_detail": user.address_detail,
         "phone": user.phone
     }
 
@@ -198,10 +229,11 @@ async def register_member(request: Request):
     user_id = data.get("user_id")
     name = data.get("name")
     phone = data.get("phone")
-    address = data.get("address")
+    address_main = data.get("address_main")
+    address_detail = data.get("address_detail")
     
     db = next(get_db())
-    crud.promote_to_member(db, user_id, name, phone, address)
+    crud.promote_to_member(db, user_id, name, phone, address_main, address_detail)
     return {"status": "success", "message": "會員註冊成功！"}
 
 @app.post("/api/orders")
