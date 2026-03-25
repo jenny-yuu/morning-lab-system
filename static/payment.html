@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>晨光支付中心 | Payment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #333; --bg: #F8F9FA; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .pay-card { background: white; width: 100%; max-width: 400px; border-radius: 20px; padding: 40px 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); text-align: center; }
+        .total { font-size: 48px; font-weight: 800; margin: 10px 0; color: #333; }
+        .methods { margin-top: 30px; display: grid; gap: 15px; }
+        .method-btn { border: 2px solid #F0F0F0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: all 0.3s; background: white; width: 100%; text-align: left; }
+        .method-btn:hover { border-color: var(--primary); background: #FFFDEE; }
+        .icon-box { width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .btn-pay { background: #333; color: white; border: none; width: 100%; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 16px; margin-top: 30px; }
+        .success-overlay { position: fixed; inset: 0; background: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { opacity:0; transform: scale(0.8); } to { opacity:1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <div class="pay-card">
+        <div style="font-weight: 800; color: #999;">結帳金額</div>
+        <div class="total" id="pay-total">$0</div>
+        <div style="font-size: 12px; color: #BBB;">訂單編號: <span id="oid">#---</span></div>
+
+        <div class="methods">
+            <button class="method-btn" onclick="select(this)">
+                <div class="icon-box" style="background: #00C300; color: white;">L</div>
+                <div>
+                    <div style="font-weight: 800;">LINE Pay (模擬)</div>
+                    <div style="font-size: 11px; color: #999;">一鍵快速支付</div>
+                </div>
+            </button>
+            <button class="method-btn" onclick="select(this)">
+                <div class="icon-box" style="background: #005599; color: white;">🏦</div>
+                <div>
+                    <div style="font-weight: 800;">虛擬轉帳 (模擬)</div>
+                    <div style="font-size: 11px; color: #999;">手機銀行即時對帳</div>
+                </div>
+            </button>
+        </div>
+
+        <button class="btn-pay" onclick="doPay()">確認支付</button>
+        <p style="font-size: 11px; color: #CCC; margin-top: 20px;">* 此頁面為開發演示，不會產生真實扣款</p>
+    </div>
+
+    <div id="success" class="success-overlay">
+        <div style="font-size: 80px;">✅</div>
+        <h2 style="font-weight: 800; margin: 10px 0;">支付成功！</h2>
+        <p style="color: #666; margin-bottom: 20px;">訂單已轉入廚房排單...</p>
+        <button class="btn-pay" style="width: 200px;" onclick="window.close()">完成</button>
+    </div>
+
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById('pay-total').innerText = '$' + (params.get('total') || 0);
+        document.getElementById('oid').innerText = '#' + (params.get('order_id') || '---');
+
+        function select(el) {
+            document.querySelectorAll('.method-btn').forEach(b => b.style.borderColor = '#F0F0F0');
+            el.style.borderColor = '#FFD200';
+        }
+
+        async function doPay() {
+            const oid = params.get('order_id');
+            const total = params.get('total');
+            try {
+                // 模擬回報後端
+                const r = await fetch('/api/payment-simulate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ order_id: oid, status: 'paid' })
+                });
+                document.getElementById('success').style.display = 'flex';
+            } catch (e) {
+                alert("支付通訊失敗");
+            }
+        }
+        
+        async function init() {
+            try { await liff.init({ liffId: '2006935266-98Xreom4' }); } catch(e){}
+        }
+        init();
+    </script>
+</body>
+</html>

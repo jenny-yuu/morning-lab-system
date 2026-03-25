@@ -1,0 +1,17 @@
+venv/
+__pycache__/
+*.pyc
+.env
+orders.db
+morning_lab.db
+cloudflared.exe
+*.log
+tunnel_error.txt
+tunnel_output.txt
+tunnel_recheck.txt
+tunnel_url.txt
+FINAL_URL.txt
+get_tunnel.py
+start_stable.py
+requirements.txt
+# (Wait, actually requirements.txt SHOULD be included)

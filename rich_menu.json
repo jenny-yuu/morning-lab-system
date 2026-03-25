@@ -1,0 +1,51 @@
+{
+  "richMenuId": "",
+  "size": {
+    "width": 2500,
+    "height": 1686
+  },
+  "selected": true,
+  "name": "MorningLab_Main",
+  "chatBarText": "選單",
+  "areas": [
+    {
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 833,
+        "height": 1686
+      },
+      "action": {
+        "type": "uri",
+        "label": "加入會員 / 菜單",
+        "uri": "https://walked-advised-peers-determine.trycloudflare.com/static/index.html"
+      }
+    },
+    {
+      "bounds": {
+        "x": 834,
+        "y": 0,
+        "width": 833,
+        "height": 1686
+      },
+      "action": {
+        "type": "message",
+        "label": "儲值、付款",
+        "text": "我要儲值"
+      }
+    },
+    {
+      "bounds": {
+        "x": 1668,
+        "y": 0,
+        "width": 832,
+        "height": 1686
+      },
+      "action": {
+        "type": "message",
+        "label": "我的餘額",
+        "text": "查詢餘額"
+      }
+    }
+  ]
+}

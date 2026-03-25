@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>晨光專送 | LINE 訂餐系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFD200;
+            --primary-soft: #FFF9D8;
+            --secondary: #333; /* Darker secondary for more professional feel */
+            --bg: #F8F9FA; /* Slightly cooler bg */
+            --card: #FFFFFF;
+            --text: #1A1A1A; /* Darker text */
+            --radius: 20px; /* Less rounded for professional feel */
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 120px;
+            overflow-x: hidden;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            z-index: 3000;
+            border-radius: 0 0 25px 25px;
+        }
+
+        .tab-item {
+            font-weight: 800;
+            font-size: 14px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #AAA;
+            transition: all 0.3s;
+        }
+
+        .tab-item.active {
+            background: var(--primary);
+            color: #333;
+            box-shadow: 0 4px 12px rgba(255, 210, 0, 0.3);
+        }
+
+        .page {
+            display: none;
+            padding: 100px 20px 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Common Elements */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 50px;
+            background: var(--primary);
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(255, 210, 0, 0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Item Row */
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #F5F5F5;
+        }
+
+        .item-row:last-child {
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 800;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .item-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .item-price {
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 0 15px;
+            font-size: 18px;
+        }
+
+        /* Cute Counter */
+        .counter {
+            display: flex;
+            align-items: center;
+            background: #F0F0F0;
+            border-radius: 15px;
+            padding: 3px;
+        }
+
+        .btn-c {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .btn-c.plus {
+            background: var(--primary);
+        }
+
+        .qty {
+            width: 30px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        /* Form Controls */
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #F0F0F0;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        /* Top-up Info */
+        .pay-method {
+            background: #FAFAFA;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            border: 1px dashed #DDD;
+        }
+
+        .pay-title {
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .pay-val {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #333;
+            height: 80px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 4000;
+        }
+
+        .total-box {
+            color: white;
+        }
+
+        .total-val {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .total-lbl {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        .go-btn {
+            background: var(--primary);
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        /* Toggle Switch */
+        .toggle-box {
+            display: flex;
+            background: #EEE;
+            padding: 5px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #999;
+        }
+
+        .toggle-btn.active {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Tab Nav -->
+    <div class="tab-nav">
+        <div class="tab-item active" onclick="showPage('order')">點餐服務</div>
+        <div class="tab-item" onclick="showPage('member')">會員中心</div>
+        <div class="tab-item" onclick="showPage('topup')">儲值管理</div>
+    </div>
+
+    <!-- Page: Order -->
+    <div id="page-order" class="page active">
+        <header>
+            <h1>Morning Lab</h1>
+            <p style="font-size: 13px; color: #666; font-weight: 400; letter-spacing: 1px; margin-top: 5px;">竹北高鐵區 | 晨光專送</p>
+        </header>
+
+        <div class="card">
+            <h2 class="section-title">配送資訊</h2>
+
+            <div class="toggle-box">
+                <div id="t-guest" class="toggle-btn active" onclick="setRole('guest')">一次點餐 (訪客)</div>
+                <div id="t-member" class="toggle-btn" onclick="setRole('member')">儲值扣款 (會員)</div>
+            </div>
+
+            <label>訂購日期 (截單 22:00)</label>
+            <input type="date" id="o-date">
+
+            <label>聯絡電話</label>
+            <input type="tel" id="o-phone" placeholder="09xx-xxx-xxx">
+
+            <label>社區名稱 / 大樓名稱 / 戶號</label>
+            <input type="text" id="o-addr-detail" placeholder="例如：高鐵首富 / A棟 12F-1">
+
+            <label>配送地址</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="o-addr" placeholder="例如：竹北市高鐵七路1號" style="margin-bottom: 0;">
+                <button class="go-btn" style="white-space: nowrap; padding: 10px; font-size: 13px;" onclick="checkAddrDist('o')">🔍 檢查</button>
+            </div>
+            <div id="o-dist-info" style="font-size: 11px; color: #999; text-align: right;">尚未驗證距離</div>
+            <input type="hidden" id="o-lat"><input type="hidden" id="o-lon">
+        </div>
+
+        <h2 class="section-title">嚴選套餐</h2>
+        <div class="card" id="menu-combos"></div>
+
+        <h2 class="section-title">單點系列</h2>
+        <div class="card" id="menu-mains"></div>
+
+        <h2 class="section-title">飲品與湯品</h2>
+        <div class="card" id="menu-drinks"></div>
+    </div>
+
+    <!-- Page: Member -->
+    <div id="page-member" class="page">
+        <h2 class="section-title">👤 會員中心</h2>
+        <div class="card">
+            <div id="mem-status" style="text-align: center; padding: 20px 0;">
+                <p style="color: #999;">您目前是以訪客身分瀏覽</p>
+                <button class="go-btn" style="margin-top: 15px; width: 100%;" onclick="showReg()">立即登記會員</button>
+            </div>
+
+            <div id="reg-form" style="display: none;">
+                <h3 style="margin-bottom: 20px;">會員登記 <span>(享滿千送百)</span></h3>
+                <label>Line 名稱為：</label>
+                <input type="text" id="reg-name" placeholder="請填寫 Line 顯示名稱">
+                <label>常用外送地址 (限高鐵區 5km)：</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="reg-addr" placeholder="例如：竹北市文興路二段..." style="margin-bottom: 0;">
+                    <button class="go-btn" style="white-space: nowrap; padding: 10px; font-size: 13px;" onclick="checkAddrDist('reg')">🔍 檢查</button>
+                </div>
+                <div id="reg-dist-info" style="font-size: 11px; color: #999; text-align: right;">請先驗證配送範圍</div>
+                
+                <label>大樓名稱 / 戶號：</label>
+                <input type="text" id="reg-addr-detail" placeholder="例如：高鐵首富 / B棟 5F">
+                <label>聯絡電話：</label>
+                <input type="tel" id="reg-phone">
+                <button class="go-btn" style="width: 100%;" onclick="doReg()">送出登記</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page: Topup -->
+    <div id="page-topup" class="page">
+        <h2 class="section-title">💰 儲值優惠方案</h2>
+        <div class="card">
+            <p style="font-weight: 800; color: var(--secondary); margin-bottom: 15px;">✨ 滿千送百，無使用期限 ✨</p>
+            <div class="pay-method">
+                <div class="pay-title">🏦 銀行轉帳</div>
+                <div class="pay-val">中國信託 (822) 5545-4042-9370</div>
+            </div>
+            <div class="pay-method">
+                <div class="pay-title">📲 LINE Pay</div>
+                <div class="pay-val">搜尋 ID: h7531569，轉帳後請截圖回傳</div>
+            </div>
+            <div class="pay-method">
+                <div class="pay-title">🏙 街口支付</div>
+                <div class="pay-val">396-900464542</div>
+            </div>
+            <p style="font-size: 12px; color: #888; margin-top: 15px; line-height: 1.6;">
+                * 轉帳完成後，請於 Line 對話框回傳「轉帳截圖」或「末五碼」，小幫手將於 24 小時內為您更新餘額。
+            </p>
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #EEE;">
+                <p style="font-weight: 800; font-size: 14px; margin-bottom: 10px;">🛠 演示專用：模擬儲值</p>
+                <button class="go-btn" style="width: 100%; background: #333; color: white;" onclick="testTopup(500)">
+                    一鍵存入 $500 (免截圖測試)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Cart -->
+    <div class="bottom-bar">
+        <div class="total-box">
+            <div class="total-lbl" id="disc-txt">無優惠</div>
+            <div class="total-val" id="total-val">$0</div>
+        </div>
+        <button class="go-btn" onclick="submit()">確認預約 ➔</button>
+    </div>
+
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        const LIFF_ID = '2006935266-98Xreom4';
+        let userId = 'demo_user';
+        let userBalance = 0;
+        let role = 'guest';
+        const cart = {};
+        const menu = {
+            'c1': { n: '🥇 學霸專注力組', p: 130, d: '三明治+嫩蛋+蝦仁+水果+豆漿', t: 'combo' },
+            'c2': { n: '🌿 輕盈纖維組', p: 125, d: '蛋餅+蔬菜嫩蛋+花椰菜+堅果+豆漿紅茶', t: 'combo' },
+            'c3': { n: '💪 飽足元氣組', p: 140, d: '燒餅+薯泥沙拉+水煮蛋+蝦仁+紅茶', t: 'combo' },
+            'm1': { n: '🥪 薯泥沙拉三明治', p: 60, t: 'main' },
+            'm2': { n: '🥪 蔬菜嫩蛋三明治', p: 55, t: 'main' },
+            'm3': { n: '🌮 薯泥沙拉豆包蛋餅', p: 70, t: 'main' },
+            'm4': { n: '🌮 蔬菜嫩蛋豆包蛋餅', p: 65, t: 'main' },
+            'm5': { n: '🍞 薯泥沙拉燒餅', p: 70, t: 'main' },
+            'm6': { n: '🍞 番茄嫩蛋燒餅', p: 65, t: 'main' },
+            'd1': { n: '🧊 微糖紅茶', p: 30, t: 'drink' },
+            'd2': { n: '🥛 無糖豆漿', p: 30, t: 'drink' }
+        };
+
+        async function initLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    userId = profile.userId;
+                    fetchUserStatus();
+                } else {
+                    fetchUserStatus();
+                }
+            } catch (e) {
+                console.error("LIFF Error", e);
+                fetchUserStatus();
+            }
+        }
+
+        async function fetchUserStatus() {
+            try {
+                const r = await fetch(`/api/user/${userId}`);
+                const data = await r.json();
+                const memStatus = document.getElementById('mem-status');
+                if (data.is_member) {
+                    userBalance = data.balance;
+                    memStatus.innerHTML = `
+                        <div style="background: var(--primary-soft); padding: 30px; border-radius: 20px; border: 2px solid var(--primary);">
+                            <div style="font-size: 14px; color: #8B7300; font-weight: 800;">當前餘額</div>
+                            <div style="font-size: 40px; font-weight: 800; margin: 10px 0;">$${userBalance}</div>
+                            <div style="font-size: 12px; color: #666;">會員姓名：${data.name}</div>
+                        </div>
+                    `;
+                    // 自動帶入資料
+                    document.getElementById('o-phone').value = data.phone || '';
+                    document.getElementById('o-addr').value = data.address_main || '';
+                    document.getElementById('o-addr-detail').value = data.address_detail || '';
+                    
+                    // 只要有主地址，就自動檢查一次距離
+                    if (data.address_main) checkAddrDist('o');
+                    
+                    setRole('member');
+                } else {
+                    memStatus.innerHTML = `
+                        <p style="color: #999;">您目前是以訪客身分瀏覽</p>
+                        <button class="go-btn" style="margin-top: 15px; width: 100%;" onclick="showReg()">立即登記會員</button>
+                    `;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function testTopup(amount) {
+            try {
+                const r = await fetch('/api/test-topup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, amount: amount })
+                });
+                const res = await r.json();
+                if (res.status === "success") {
+                    alert(`✅ 模擬支付/儲值成功！已存入 $${amount}`);
+                    fetchUserStatus();
+                    showPage('member');
+                }
+            } catch (e) { alert("連線失敗"); }
+        }
+
+        function showPage(p) {
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${p}`).classList.add('active');
+
+            // 找到對應的索引或直接匹配
+            const idx = { 'order': 0, 'member': 1, 'topup': 2 }[p];
+            document.querySelectorAll('.tab-item')[idx].classList.add('active');
+        }
+
+        function setRole(r) {
+            role = r;
+            document.getElementById('t-guest').classList.toggle('active', r === 'guest');
+            document.getElementById('t-member').classList.toggle('active', r === 'member');
+        }
+
+        function renderMenu() {
+            document.getElementById('menu-combos').innerHTML = '';
+            document.getElementById('menu-mains').innerHTML = '';
+            document.getElementById('menu-drinks').innerHTML = '';
+            for (let id in menu) {
+                const item = menu[id];
+                const html = `
+                    <div class="item-row">
+                        <div class="item-info">
+                            <div class="item-name">${item.n}</div>
+                            ${item.d ? `<div class="item-desc">${item.d}</div>` : ''}
+                        </div>
+                        <div class="item-price">$${item.p}</div>
+                        <div class="counter">
+                            <button class="btn-c" onclick="chg('${id}', -1)">-</button>
+                            <div class="qty" id="qty-${id}">0</div>
+                            <button class="btn-c plus" onclick="chg('${id}', 1)">+</button>
+                        </div>
+                    </div>`;
+                if (item.t === 'combo') document.getElementById('menu-combos').innerHTML += html;
+                else if (item.t === 'main') document.getElementById('menu-mains').innerHTML += html;
+                else document.getElementById('menu-drinks').innerHTML += html;
+            }
+        }
+
+        function chg(id, d) {
+            cart[id] = Math.max(0, (cart[id] || 0) + d);
+            document.getElementById(`qty-${id}`).innerText = cart[id];
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let sum = 0, mains = 0, drinks = 0;
+            for (let id in cart) {
+                sum += cart[id] * menu[id].p;
+                if (menu[id].t === 'main') mains += cart[id];
+                if (menu[id].t === 'drink') drinks += cart[id];
+            }
+            const disc = Math.min(mains, drinks) * 5;
+            document.getElementById('total-val').innerText = `$${sum - disc}`;
+            document.getElementById('disc-txt').innerText = disc > 0 ? `✨ 已享折抵 $${disc}` : '無優惠';
+        }
+
+        async function checkAddrDist(type = 'o') {
+            const addr = document.getElementById(type === 'o' ? 'o-addr' : 'reg-addr').value;
+            const info = document.getElementById(type === 'o' ? 'o-dist-info' : 'reg-dist-info');
+            if (!addr) return alert("請先輸入地址！");
+
+            info.innerText = "🔍 正在查詢距離...";
+            try {
+                const r = await fetch(`/api/geocode?address=${encodeURIComponent(addr)}`);
+                const data = await r.json();
+                
+                if (data.status === "success") {
+                    if (type === 'o') {
+                        document.getElementById('o-lat').value = data.lat;
+                        document.getElementById('o-lon').value = data.lon;
+                    }
+                    
+                    if (data.is_within_range) {
+                        info.innerText = `✅ 在範圍內 (距店址 ${data.distance_km} km)`;
+                        info.style.color = "#4CAF50";
+                        return true;
+                    } else {
+                        info.innerText = `⚠️ 距離 ${data.distance_km} km (超出 5km)`;
+                        info.style.color = "#F44336";
+                        alert(`輸入的地址距離店址 ${data.distance_km} 公里，超出了配送範圍。`);
+                        return false;
+                    }
+                } else {
+                    info.innerText = "❌ 找不到此地址";
+                    alert(data.message);
+                    return false;
+                }
+            } catch (e) {
+                info.innerText = "伺服器或網路錯誤";
+                return false;
+            }
+        }
+
+        function showReg() {
+            document.getElementById('mem-status').style.display = 'none';
+            document.getElementById('reg-form').style.display = 'block';
+        }
+
+        async function doReg() {
+            const addrMain = document.getElementById('reg-addr').value;
+            const addrDetail = document.getElementById('reg-addr-detail').value; // Assuming a new input for detail
+            if (!addrMain) return alert("請填寫地址！");
+            
+            const isOk = await checkAddrDist('reg');
+            if (!isOk) return;
+
+            const payload = {
+                user_id: userId,
+                name: document.getElementById('reg-name').value,
+                phone: document.getElementById('reg-phone').value,
+                address_main: addrMain,
+                address_detail: addrDetail
+            };
+            if (!payload.name || !payload.phone) return alert("請填寫姓名與電話！");
+
+            try {
+                const r = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const res = await r.json();
+                if (res.status === "success") {
+                    alert("🎉 註冊成功！可以去儲值頁面測試餘額功能囉！");
+                    fetchUserStatus();
+                    showPage('member');
+                }
+            } catch (e) { alert("連線失敗"); }
+        }
+
+        async function submit() {
+            const total = parseInt(document.getElementById('total-val').innerText.replace('$', ''));
+            if (total === 0) return alert("請先選餐！🍭");
+
+            const addr = document.getElementById('o-addr').value;
+            const detail = document.getElementById('o-addr-detail').value;
+            if (!addr || !detail) return alert("請輸入完整地址與戶號喔！🏠");
+            if (!addr.includes("高鐵")) return alert("🚫 配送範圍錯誤：目前僅支援竹北高鐵區喔！");
+
+            const payload = {
+                user_id: userId,
+                total_price: total,
+                items: JSON.stringify(cart),
+                delivery_date: document.getElementById('o-date').value,
+                pay_mode: role,
+                address_main: document.getElementById('o-addr').value,
+                address_detail: document.getElementById('o-addr-detail').value,
+                lat: document.getElementById('o-lat').value,
+                lon: document.getElementById('o-lon').value
+            };
+
+            try {
+                const r = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const res = await r.json();
+                if (res.status === "success") {
+                    if (role === 'guest') {
+                        // 導向模擬支付頁面
+                        window.location.href = `payment.html?order_id=${res.order_id}&total=${total}`;
+                    } else {
+                        alert("🚀 點餐預約完成！\n" + res.message);
+                        liff.closeWindow();
+                    }
+                } else {
+                    alert("❌ 失敗：" + res.message);
+                }
+            } catch (e) { alert("連線失敗"); }
+        }
+
+        renderMenu();
+        initLiff();
+        const t = new Date(); t.setDate(t.getDate() + 1);
+        document.getElementById('o-date').value = t.toISOString().split('T')[0];
+    </script>
+</body>
+
+</html>
