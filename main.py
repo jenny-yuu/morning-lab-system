@@ -116,14 +116,6 @@ async def get_user_status(user_id: str):
         "phone": user.phone
     }
 
-@app.post("/api/payment-simulate")
-async def payment_simulate(request: Request):
-    data = await request.json()
-    order_id = data.get("order_id")
-    # 這裡可以擴充資料庫更新邏輯，演示 Webhook 回傳處理
-    print(f"Payment simulation received for Order {order_id}")
-    return {"status": "success", "message": "已收到支付回報"}
-
 @app.post("/api/test-topup")
 async def test_topup(request: Request):
     data = await request.json()
