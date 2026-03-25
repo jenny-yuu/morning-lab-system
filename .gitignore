@@ -13,5 +13,4 @@ tunnel_url.txt
 FINAL_URL.txt
 get_tunnel.py
 start_stable.py
-requirements.txt
 # (Wait, actually requirements.txt SHOULD be included)
