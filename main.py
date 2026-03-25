@@ -40,6 +40,38 @@ async def read_index():
 async def read_pay():
     return FileResponse('static/payment.html')
 
+@app.get("/admin")
+async def read_admin():
+    return FileResponse('static/admin.html')
+
+@app.get("/api/admin/data")
+async def get_admin_data():
+    db = next(get_db())
+    orders = db.query(models.Order).all()
+    users = db.query(models.User).all()
+    # 轉換為 JSON 格式 (簡單起見直接轉)
+    return {
+        "orders": [
+            {
+                "id": o.id, 
+                "delivery_date": o.delivery_date, 
+                "items": o.items, 
+                "total_price": o.total_price, 
+                "address_main": o.address_main, 
+                "address_detail": o.address_detail
+            } for o in orders
+        ],
+        "users": [
+            {
+                "user_id": u.user_id, 
+                "name": u.name, 
+                "balance": u.balance, 
+                "is_member": u.is_member,
+                "phone": u.phone
+            } for u in users
+        ]
+    }
+
 # 依賴項：獲取資料庫 Session
 def get_db():
     db = database.SessionLocal()

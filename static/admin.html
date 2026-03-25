@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Lab | 後台管理系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFD200;
+            --dark: #333333;
+            --bg: #F8F9FA;
+            --card: #FFFFFF;
+        }
+        body {
+            font-family: 'Inter', "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 { margin: 0; font-size: 24px; font-weight: 700; }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #EEEEEE;
+        }
+        th {
+            background-color: #FDFDFD;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:hover { background: #FAFAFA; }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-member { background: #E3F2FD; color: #1976D2; }
+        .badge-guest { background: #F5F5F5; color: #757575; }
+        .refresh-btn {
+            background: var(--primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .refresh-btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Morning Lab 後台管理</h1>
+            <button class="refresh-btn" onclick="fetchData()">重新整理</button>
+        </header>
+
+        <main>
+            <div class="card">
+                <h3>今日訂單 (Total: <span id="order-count">0</span>)</h3>
+                <table id="order-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>日期</th>
+                            <th>內容</th>
+                            <th>總價</th>
+                            <th>地址</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>會員列表 (Total: <span id="user-count">0</span>)</h3>
+                <table id="user-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>姓名</th>
+                            <th>電話</th>
+                            <th>餘額</th>
+                            <th>狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/admin/data');
+                const data = await response.json();
+                
+                // Update Orders
+                const orderBody = document.querySelector('#order-table tbody');
+                orderBody.innerHTML = '';
+                data.orders.forEach(o => {
+                    const row = `<tr>
+                        <td>${o.id}</td>
+                        <td>${o.delivery_date}</td>
+                        <td>${o.items}</td>
+                        <td>$${o.total_price}</td>
+                        <td>${o.address_main} - ${o.address_detail}</td>
+                    </tr>`;
+                    orderBody.insertAdjacentHTML('beforeend', row);
+                });
+                document.getElementById('order-count').innerText = data.orders.length;
+
+                // Update Users
+                const userBody = document.querySelector('#user-table tbody');
+                userBody.innerHTML = '';
+                data.users.forEach(u => {
+                    const statusClass = u.is_member ? 'badge-member' : 'badge-guest';
+                    const statusText = u.is_member ? '正式會員' : '訪客';
+                    const row = `<tr>
+                        <td>${u.user_id.substring(0,8)}...</td>
+                        <td>${u.name || '-'}</td>
+                        <td>${u.phone || '-'}</td>
+                        <td>$${u.balance}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    </tr>`;
+                    userBody.insertAdjacentHTML('beforeend', row);
+                });
+                document.getElementById('user-count').innerText = data.users.length;
+
+            } catch (err) {
+                console.error("Fetch failed", err);
+            }
+        }
+        fetchData();
+    </script>
+</body>
+</html>
