@@ -63,7 +63,7 @@ async def get_admin_data():
         ],
         "users": [
             {
-                "user_id": u.user_id, 
+                "user_id": u.line_id, 
                 "name": u.name, 
                 "balance": u.balance, 
                 "is_member": u.is_member,
@@ -71,6 +71,41 @@ async def get_admin_data():
             } for u in users
         ]
     }
+
+@app.delete("/api/admin/order/{order_id}")
+async def delete_order(order_id: int):
+    db = next(get_db())
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    db.delete(order)
+    db.commit()
+    return {"status": "success"}
+
+@app.post("/api/admin/order/{order_id}/status")
+async def update_order_status(order_id: int, request: Request):
+    data = await request.json()
+    new_status = data.get("status")
+    db = next(get_db())
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    order.status = new_status
+    db.commit()
+    return {"status": "success"}
+
+@app.post("/api/admin/user/balance")
+async def admin_update_balance(request: Request):
+    data = await request.json()
+    user_id = data.get("user_id")
+    new_balance = data.get("balance")
+    db = next(get_db())
+    user = db.query(models.User).filter(models.User.line_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.balance = new_balance
+    db.commit()
+    return {"status": "success"}
 
 # 依賴項：獲取資料庫 Session
 def get_db():

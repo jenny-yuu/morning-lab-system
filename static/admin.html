@@ -94,6 +94,8 @@
                             <th>內容</th>
                             <th>總價</th>
                             <th>地址</th>
+                            <th>狀態</th>
+                            <th>管理</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -110,6 +112,7 @@
                             <th>電話</th>
                             <th>餘額</th>
                             <th>狀態</th>
+                            <th>管理</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -128,12 +131,22 @@
                 const orderBody = document.querySelector('#order-table tbody');
                 orderBody.innerHTML = '';
                 data.orders.forEach(o => {
+                    const statusColor = o.status === '已完成' ? '#4CAF50' : (o.status === '已取消' ? '#F44336' : '#FF9800');
                     const row = `<tr>
                         <td>${o.id}</td>
                         <td>${o.delivery_date}</td>
                         <td>${o.items}</td>
                         <td>$${o.total_price}</td>
-                        <td>${o.address_main} - ${o.address_detail}</td>
+                        <td>${o.address_main} ${o.address_detail || ''}</td>
+                        <td style="color: ${statusColor}; font-weight:600">${o.status || '待處理'}</td>
+                        <td>
+                            <select onchange="updateStatus(${o.id}, this.value)" style="padding:2px; font-size:12px">
+                                <option value="待處理" ${o.status==='待處理'?'selected':''}>待處理</option>
+                                <option value="已完成" ${o.status==='已完成'?'selected':''}>已完成</option>
+                                <option value="已取消" ${o.status==='已取消'?'selected':''}>已取消</option>
+                            </select>
+                            <button onclick="deleteOrder(${o.id})" style="color:red; cursor:pointer; border:none; background:none; font-size:12px; margin-left:5px">刪除</button>
+                        </td>
                     </tr>`;
                     orderBody.insertAdjacentHTML('beforeend', row);
                 });
@@ -151,6 +164,9 @@
                         <td>${u.phone || '-'}</td>
                         <td>$${u.balance}</td>
                         <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button onclick="editBalance('${u.user_id}', ${u.balance})" style="cursor:pointer; padding:2px 8px; font-size:12px">調額</button>
+                        </td>
                     </tr>`;
                     userBody.insertAdjacentHTML('beforeend', row);
                 });
@@ -160,6 +176,35 @@
                 console.error("Fetch failed", err);
             }
         }
+
+        async function updateStatus(id, status) {
+            await fetch(`/api/admin/order/${id}/status`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status})
+            });
+            fetchData();
+        }
+
+        async function deleteOrder(id) {
+            if(confirm('確定要刪除這筆訂單嗎？')) {
+                await fetch(`/api/admin/order/${id}`, { method: 'DELETE' });
+                fetchData();
+            }
+        }
+
+        async function editBalance(userId, current) {
+            const newBalance = prompt('輸入新的餘額：', current);
+            if (newBalance !== null) {
+                await fetch(`/api/admin/user/balance`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: userId, balance: parseInt(newBalance)})
+                });
+                fetchData();
+            }
+        }
+
         fetchData();
     </script>
 </body>

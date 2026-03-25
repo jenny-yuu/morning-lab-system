@@ -31,4 +31,5 @@ class Order(Base):
     delivery_date = Column(String, index=True) 
     address_main = Column(String, nullable=True)
     address_detail = Column(String, nullable=True)
+    status = Column(String, default="待處理") # 待處理, 已完成, 已取消
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
